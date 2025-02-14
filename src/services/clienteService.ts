@@ -3,11 +3,11 @@ import { Cliente } from "../interfaces/Cliente";
 
 const API_URL = "http://localhost:7091/api/Clientes";
 
-export const getClientes = async () => {
-  const response = await axios.get<Cliente[]>(API_URL);
+export const getClientes = async (page: number, size: number, search: string) => {
+  const response = await axios.get<{ clientes: Cliente[]; totalItems: number }>(
+    API_URL,
+    { params: { page, size, search } }
+  );
   return response.data;
 };
 
-export const addCliente = async (cliente: Cliente) => {
-  await axios.post(API_URL, cliente);
-};
