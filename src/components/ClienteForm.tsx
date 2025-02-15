@@ -10,9 +10,32 @@ const ClienteForm = ({ onCsvUploaded }: ClienteFormProps) => {
   const [message, setMessage] = useState<string>("");
   const [alertType, setAlertType] = useState<"success" | "danger" | "">("");
 
+  const maxFileSize = 100 * 1024 * 1024; // 5 MB
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage("");
+    setAlertType("");
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+
+      // Validar extensión del archivo
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
+      if (fileExtension !== "csv") {
+        setMessage("El archivo debe tener extensión .csv");
+        setAlertType("danger");
+        setFile(null);
+        return;
+      }
+
+      // Validar tamaño del archivo
+      if (selectedFile.size > maxFileSize) {
+        setMessage("El archivo excede el tamaño máximo permitido (5 MB).");
+        setAlertType("danger");
+        setFile(null);
+        return;
+      }
+
+      setFile(selectedFile);
     }
   };
 
@@ -28,12 +51,10 @@ const ClienteForm = ({ onCsvUploaded }: ClienteFormProps) => {
     }
 
     try {
-      // Llamamos a la función del servicio
       const response = await uploadCsv(file);
-      // Suponiendo que el backend retorna { message, totalRegistros }
       setMessage(`${response.message} Se guardaron ${response.totalRegistros} registros.`);
       setAlertType("success");
-      onCsvUploaded(); // Notificamos al componente padre, si corresponde
+      onCsvUploaded();
     } catch (error: unknown) {
       if (error instanceof Error) {
         setMessage("Error al cargar el archivo CSV: " + error.message);
@@ -45,7 +66,6 @@ const ClienteForm = ({ onCsvUploaded }: ClienteFormProps) => {
   };
 
   return (
-    <div className="container text-center">
     <form onSubmit={handleSubmit} className="p-3 border rounded">
       <h3>Cargar Archivo CSV</h3>
       <div className="mb-3">
@@ -67,7 +87,6 @@ const ClienteForm = ({ onCsvUploaded }: ClienteFormProps) => {
         </div>
       )}
     </form>
-    </div>
   );
 };
 
