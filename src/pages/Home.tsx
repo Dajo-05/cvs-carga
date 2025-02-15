@@ -1,3 +1,4 @@
+// Home.tsx
 import { useState } from "react";
 import ClienteForm from "../components/ClienteForm";
 import ClienteList from "../components/ClienteList";
@@ -8,10 +9,11 @@ const Home = () => {
   return (
     <div className="container mt-4">
       <h1>Gestión de Clientes</h1>
-      <ClienteForm onClienteAdded={() => setRefresh(!refresh)} />
+      <ClienteForm onCsvUploaded={() => setRefresh(!refresh)} />
       <ClienteList key={refresh ? "1" : "0"} />
     </div>
   );
 };
 
 export default Home;
+

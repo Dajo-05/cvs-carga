@@ -1,32 +1,56 @@
 import { useState } from "react";
-import { Cliente } from "../interfaces/Cliente";
-import { addCliente } from "../services/clienteService";
+import { uploadCsv } from "../services/clienteService";
 
-const ClienteForm = ({ onClienteAdded }: { onClienteAdded: () => void }) => {
-  const [cliente, setCliente] = useState<Cliente>({
-    id: 0,
-    nombre: "",
-    edad: 0,
-    email: "",
-  });
+interface ClienteFormProps {
+  onCsvUploaded: () => void;
+}
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCliente({ ...cliente, [e.target.name]: e.target.value });
+const ClienteForm = ({ onCsvUploaded }: ClienteFormProps) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState<string>("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addCliente(cliente);
-    onClienteAdded();
+
+    if (!file) {
+      setMessage("Por favor, selecciona un archivo CSV.");
+      return;
+    }
+
+    try {
+      await uploadCsv(file);
+      setMessage("Archivo CSV cargado correctamente.");
+      onCsvUploaded(); // Para refrescar o notificar al padre si es necesario
+    } catch (error) {
+      if (error instanceof Error) {
+        setMessage("Error al cargar el archivo CSV: " + error.message);
+      } else {
+        setMessage("Error al cargar el archivo CSV.");
+      }
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-3 border rounded">
-      <h3>Agregar Cliente</h3>
-      <input type="text" name="nombre" placeholder="Nombre" className="form-control mb-2" onChange={handleChange} required />
-      <input type="number" name="edad" placeholder="Edad" className="form-control mb-2" onChange={handleChange} required />
-      <input type="email" name="email" placeholder="Email" className="form-control mb-2" onChange={handleChange} required />
-      <button type="submit" className="btn btn-primary w-100">Guardar</button>
+      <h3>Cargar Archivo CSV</h3>
+      <div className="mb-3">
+        <input 
+          type="file" 
+          accept=".csv" 
+          onChange={handleFileChange} 
+          className="form-control" 
+        />
+      </div>
+      <button type="submit" className="btn btn-primary w-100">
+        Subir Archivo
+      </button>
+      {message && <p className="mt-2 text-center">{message}</p>}
     </form>
   );
 };
