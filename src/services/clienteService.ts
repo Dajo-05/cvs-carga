@@ -15,7 +15,7 @@ export const getClientes = async (page: number, size: number, search: string) =>
 // Función para subir el archivo CSV
 export const uploadCsv = async (file: File) => {
   const formData = new FormData();
-  formData.append("file", file); // Asegúrate que el nombre 'file' coincida con el backend
+  formData.append("file", file); 
 
   const response = await axios.post(`${API_URL}/upload`, formData, {
     headers: {
